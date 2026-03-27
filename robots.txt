@@ -1,0 +1,11 @@
+User-Agent: *
+Allow: /
+
+User-Agent: GPTBot
+User-Agent: ClaudeBot
+User-Agent: PerplexityBot
+User-Agent: Google-Extended
+User-Agent: Amazonbot
+Allow: /
+
+Sitemap: https://janda-auto.pages.dev/sitemap.xml
