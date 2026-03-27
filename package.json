@@ -1,0 +1,9 @@
+{
+  "name": "janda-auto",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve public -p 3333",
+    "build": "echo 'Static site, no build needed'"
+  }
+}
