@@ -194,6 +194,39 @@
       section { padding: 48px 16px; }
     }
   </style>
+
+  <!-- Geovault AI Crawler Tracker -->
+  <script>
+  (function() {
+    var AI_BOTS = [
+      { name: 'ClaudeBot', pattern: 'ClaudeBot' },
+      { name: 'GPTBot', pattern: 'GPTBot' },
+      { name: 'ChatGPT-User', pattern: 'ChatGPT-User' },
+      { name: 'Google-Extended', pattern: 'Google-Extended' },
+      { name: 'PerplexityBot', pattern: 'PerplexityBot' },
+      { name: 'YouBot', pattern: 'YouBot' },
+      { name: 'CCBot', pattern: 'CCBot' },
+      { name: 'Bytespider', pattern: 'Bytespider' },
+      { name: 'Bingbot', pattern: 'bingbot' },
+      { name: 'Googlebot', pattern: 'Googlebot' }
+    ];
+    var ua = navigator.userAgent;
+    for (var i = 0; i < AI_BOTS.length; i++) {
+      if (ua.indexOf(AI_BOTS[i].pattern) !== -1) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://api.geovault.app/api/crawler/report', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+          token: '02d02e1f5320732c00679d8c1f6ca521ac46b0235583b7aa',
+          botName: AI_BOTS[i].name,
+          url: window.location.href,
+          userAgent: ua
+        }));
+        break;
+      }
+    }
+  })();
+  </script>
 </head>
 <body>
 
