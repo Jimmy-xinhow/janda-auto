@@ -55,6 +55,9 @@ function validatePost(file) {
   if (!path.basename(file).endsWith(`-${data.slug}.md`)) fail(relative, '檔名結尾必須與 slug 相同');
   if (!inRange(data.description, 70, 160)) fail(relative, 'description 必須是 70–160 個字元');
   if (!data.date || Number.isNaN(Date.parse(data.date))) fail(relative, 'date 必須是有效日期時間');
+  if (data.published === true && !Number.isNaN(Date.parse(data.date)) && Date.parse(data.date) > Date.now()) {
+    fail(relative, 'GitHub Pages 不會自動在未來時間重建；未來文章請先設為草稿，預定發布時再開啟正式發布');
+  }
   if (data.updated_at && Number.isNaN(Date.parse(data.updated_at))) fail(relative, 'updated_at 必須是有效日期時間');
   if (!inRange(data.author, 2, 40)) fail(relative, 'author 必須是 2–40 個字元');
   if (!categories.has(data.category)) fail(relative, `category 不在允許清單：${data.category}`);

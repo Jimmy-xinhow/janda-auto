@@ -3,8 +3,8 @@ layout: post
 title: "詹大汽車精品保養文章上線：如何閱讀施工教學與產品指南"
 slug: janda-auto-care-blog
 description: "詹大汽車精品保養文章將汽車美容內容整理成可操作的施工步驟、注意事項、常見問題與查證來源，協助車主從洗車基礎一路理解到脫脂和鍍膜，並在實作前確認適用情境。"
-date: 2026-08-12T20:00:00+08:00
-updated_at: 2026-08-12T20:00:00+08:00
+date: 2026-08-12T19:00:00+08:00
+updated_at: 2026-08-12T19:00:00+08:00
 author: Mio
 reviewed_by: ""
 category: brand-news

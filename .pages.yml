@@ -76,6 +76,7 @@ content:
         label: 發布時間
         type: date
         required: true
+        description: GitHub Pages 不會在未來時間自動重建；預排文章請先關閉「正式發布」，到發布時間再開啟。
         options:
           time: true
           format: "yyyy-MM-dd'T'HH:mm:ssXXX"
