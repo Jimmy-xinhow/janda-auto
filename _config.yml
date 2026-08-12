@@ -1,0 +1,41 @@
+title: 詹大汽車精品
+tagline: 汽車美容保養產品與施工流程教學
+description: 詹大汽車精品分享洗車、車漆清潔、脫脂、鍍膜與 DIY 汽車美容的正確施工流程。
+url: https://jimmy-xinhow.github.io
+baseurl: /janda-auto
+lang: zh-TW
+locale: zh_TW
+timezone: Asia/Taipei
+encoding: utf-8
+
+permalink: /blog/:slug/
+future: false
+unpublished: false
+strict_front_matter: true
+excerpt_separator: "<!--more-->"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      author: Mio
+      published: true
+
+exclude:
+  - public
+  - node_modules
+  - scripts
+  - package.json
+  - package-lock.json
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - AGENTS.md

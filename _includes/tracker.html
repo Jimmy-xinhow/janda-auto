@@ -1,0 +1,28 @@
+<script>
+(function () {
+  var bots = [
+    ['ClaudeBot', 'ClaudeBot'], ['GPTBot', 'GPTBot'], ['ChatGPT-User', 'ChatGPT-User'],
+    ['Google-Extended', 'Google-Extended'], ['PerplexityBot', 'PerplexityBot'],
+    ['YouBot', 'YouBot'], ['CCBot', 'CCBot'], ['Bytespider', 'Bytespider'],
+    ['Bingbot', 'bingbot'], ['Googlebot', 'Googlebot']
+  ];
+  var ua = navigator.userAgent;
+  for (var i = 0; i < bots.length; i += 1) {
+    if (ua.indexOf(bots[i][1]) !== -1) {
+      fetch('https://api.geovault.app/api/crawler/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: '{{ site.data.site.crawler_token }}',
+          botName: bots[i][0],
+          url: window.location.href,
+          userAgent: ua
+        }),
+        keepalive: true
+      }).catch(function () {});
+      break;
+    }
+  }
+})();
+</script>
+<img src="https://api.geovault.app/api/crawler/pixel/{{ site.data.site.crawler_token }}.gif" alt="" width="1" height="1" class="tracker-pixel" referrerpolicy="no-referrer-when-downgrade">

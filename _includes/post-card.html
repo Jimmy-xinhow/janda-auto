@@ -1,0 +1,17 @@
+{% assign post = include.post %}
+{% capture post_search %}{{ post.title }} {{ post.description }} {{ post.tags | join: ' ' }}{% endcapture %}
+<article class="post-card" data-category="{{ post.category }}" data-search="{{ post_search | downcase | escape }}">
+  <a class="post-card-image" href="{{ post.url | relative_url }}" tabindex="-1" aria-hidden="true">
+    <img src="{{ post.cover_image }}" alt="" width="640" height="360" loading="lazy">
+  </a>
+  <div class="post-card-body">
+    <div class="post-card-meta">
+      <span>{{ site.data.categories[post.category] | default: post.category }}</span>
+      <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%Y.%m.%d' }}</time>
+    </div>
+    <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
+    <p>{{ post.description }}</p>
+    <div class="post-tags" aria-label="文章標籤">{% for tag in post.tags limit: 3 %}<span>{{ tag }}</span>{% endfor %}</div>
+    <a class="text-link" href="{{ post.url | relative_url }}" aria-label="閱讀：{{ post.title }}">閱讀全文 <span aria-hidden="true">→</span></a>
+  </div>
+</article>

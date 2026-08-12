@@ -1,0 +1,57 @@
+---
+layout: default
+title: 汽車美容保養文章
+description: 詹大汽車精品整理 DIY 洗車、柏油與鐵粉處理、車漆清潔、脫脂、鍍膜和產品使用的完整教學文章。
+permalink: /blog/
+---
+<section class="blog-hero">
+  <div class="shell narrow">
+    <span class="eyebrow">JANDA AUTO JOURNAL</span>
+    <h1>汽車美容保養文章</h1>
+    <p>從問題判斷、正確步驟到安全注意事項，提供能實際操作、可查證的汽車美容知識。</p>
+  </div>
+</section>
+
+<section class="blog-section">
+  <div class="shell">
+    <div class="filters" aria-label="文章篩選">
+      <label class="search-field" for="post-search">
+        <span>搜尋文章</span>
+        <input id="post-search" type="search" placeholder="例如：鐵粉、脫脂、鍍膜" autocomplete="off">
+      </label>
+      <label for="category-filter">
+        <span>文章分類</span>
+        <select id="category-filter">
+          <option value="">全部分類</option>
+          {% for item in site.data.categories %}<option value="{{ item[0] }}">{{ item[1] }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <p id="result-count" class="result-count" role="status" aria-live="polite"></p>
+    <div id="post-grid" class="card-grid">
+      {% for post in site.posts %}{% include post-card.html post=post %}{% endfor %}
+    </div>
+    <p id="empty-results" class="empty-note" hidden>找不到符合條件的文章，請改用其他關鍵字或分類。</p>
+    {% if site.posts.size == 0 %}<p class="empty-note">第一篇文章正在整理中，敬請期待。</p>{% endif %}
+
+    <nav id="pagination" class="pagination" aria-label="文章分頁" hidden>
+      <button type="button" id="previous-page">上一頁</button>
+      <span id="page-status"></span>
+      <button type="button" id="next-page">下一頁</button>
+    </nav>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "詹大汽車精品保養文章",
+  "description": {{ page.description | jsonify }},
+  "url": "{{ page.url | absolute_url }}",
+  "publisher": {"@id": "{{ site.url }}{{ site.baseurl }}/#organization"},
+  "blogPost": [{% for post in site.posts limit: 20 %}{"@type":"BlogPosting","headline":{{ post.title | jsonify }},"url":"{{ post.url | absolute_url }}","datePublished":"{{ post.date | date_to_xmlschema }}"}{% unless forloop.last %},{% endunless %}{% endfor %}]
+}
+</script>
+<script src="{{ '/assets/js/blog.js' | relative_url }}" defer></script>

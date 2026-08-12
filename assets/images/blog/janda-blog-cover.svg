@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">詹大汽車精品保養文章</title>
+  <desc id="desc">深藍色背景上的詹大汽車精品與汽車美容保養文章標題</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1022"/>
+      <stop offset="0.6" stop-color="#18264f"/>
+      <stop offset="1" stop-color="#245eea"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="75%" cy="20%" r="55%">
+      <stop offset="0" stop-color="#6f96ff" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#6f96ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#glow)"/>
+  <g fill="none" stroke="#fff" stroke-opacity=".14">
+    <path d="M-20 520 C230 400 380 610 630 480 S980 340 1240 450" stroke-width="2"/>
+    <path d="M-20 565 C250 455 410 645 650 525 S980 390 1240 495" stroke-width="1"/>
+  </g>
+  <rect x="90" y="92" width="84" height="84" rx="20" fill="#fff"/>
+  <text x="132" y="151" fill="#111a35" font-family="Noto Sans TC, sans-serif" font-size="48" font-weight="800" text-anchor="middle">詹</text>
+  <text x="90" y="250" fill="#a8beff" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="5">JANDA AUTO JOURNAL</text>
+  <text x="90" y="345" fill="#fff" font-family="Noto Sans TC, sans-serif" font-size="66" font-weight="800">汽車美容保養文章</text>
+  <text x="90" y="408" fill="#d5def4" font-family="Noto Sans TC, sans-serif" font-size="30">正確流程・實作教學・可查證來源</text>
+  <rect x="90" y="500" width="260" height="62" rx="31" fill="#fff"/>
+  <text x="220" y="541" fill="#111a35" font-family="Noto Sans TC, sans-serif" font-size="24" font-weight="700" text-anchor="middle">詹大汽車精品</text>
+</svg>

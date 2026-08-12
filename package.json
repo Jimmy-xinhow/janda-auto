@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx serve public -p 3333",
-    "build": "echo 'Static site, no build needed'"
+    "test": "node scripts/validate-content.mjs",
+    "build": "bundle exec jekyll build",
+    "dev": "bundle exec jekyll serve --livereload --host 127.0.0.1 --port 3333"
+  },
+  "devDependencies": {
+    "yaml": "^2.9.0"
   }
 }

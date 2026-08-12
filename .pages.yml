@@ -1,0 +1,240 @@
+media:
+  - name: blog_images
+    label: 部落格圖片
+    input: assets/images/blog
+    output: /janda-auto/assets/images/blog
+    rename: safe
+    extensions: [jpg, jpeg, png, webp, avif, svg]
+    categories: [image]
+
+settings:
+  content:
+    merge: true
+  commit:
+    identity: user
+    templates:
+      create: "content(blog): 新增 {path}"
+      update: "content(blog): 更新 {path}"
+      delete: "content(blog): 下架 {path}"
+      rename: "content(blog): 更名 {oldPath} -> {newPath}"
+
+content:
+  - name: posts
+    label: 部落格文章
+    type: collection
+    path: _posts
+    format: yaml-frontmatter
+    subfolders: false
+    filename:
+      template: "{year}-{month}-{day}-{slug}.md"
+      field: create
+    view:
+      fields: [title, published, date, category, author]
+      primary: title
+      sort: [date, title, category, author]
+      search: [title, description, category, tags, keywords, author]
+      default:
+        sort: date
+        order: desc
+    operations:
+      create: true
+      rename: true
+      delete: true
+    fields:
+      - name: layout
+        type: string
+        hidden: true
+        default: post
+      - name: title
+        label: 文章標題
+        type: string
+        required: true
+        description: 建議 28–60 個中文字，直接回答讀者正在搜尋的問題。
+        options:
+          minlength: 12
+          maxlength: 70
+      - name: slug
+        label: 網址代稱（slug）
+        type: string
+        required: true
+        pattern:
+          regex: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          message: 只能使用小寫英文字母、數字與半形連字號，例如 diy-car-wash-guide。
+        description: 發布後不要任意修改，避免既有搜尋排名失效。
+        options:
+          minlength: 3
+          maxlength: 80
+      - name: description
+        label: SEO 摘要
+        type: text
+        required: true
+        description: 文章獨有的 70–160 字摘要；會用於搜尋結果、社群預覽與 AI 摘要。
+        options:
+          minlength: 70
+          maxlength: 160
+      - name: date
+        label: 發布時間
+        type: date
+        required: true
+        options:
+          time: true
+          format: "yyyy-MM-dd'T'HH:mm:ssXXX"
+      - name: updated_at
+        label: 最後更新時間
+        type: date
+        default: ""
+        description: 只有文章內容確實更新時才填寫。
+        options:
+          time: true
+          format: "yyyy-MM-dd'T'HH:mm:ssXXX"
+      - name: author
+        label: 作者
+        type: string
+        required: true
+        default: Mio
+        options:
+          minlength: 2
+          maxlength: 40
+      - name: reviewed_by
+        label: 專業審閱者
+        type: string
+        default: ""
+        description: 涉及化學品、安全或施工風險時填寫實際審閱者；沒有審閱者請留空。
+      - name: category
+        label: 文章分類
+        type: select
+        required: true
+        options:
+          values:
+            - name: washing
+              label: 洗車基礎
+            - name: decontamination
+              label: 柏油與鐵粉處理
+            - name: paint-care
+              label: 車漆清潔與保養
+            - name: coating
+              label: 脫脂與鍍膜
+            - name: interior
+              label: 內裝清潔
+            - name: product-guide
+              label: 產品選購指南
+            - name: brand-news
+              label: 品牌消息
+      - name: tags
+        label: 主題標籤
+        type: string
+        required: true
+        list:
+          min: 2
+          max: 8
+        description: 使用文章真正涵蓋的主題，不要堆疊無關關鍵字。
+      - name: keywords
+        label: 目標搜尋詞
+        type: string
+        required: true
+        list:
+          min: 2
+          max: 10
+        description: 供內容規劃、站內搜尋與結構化資料使用。
+      - name: cover_image
+        label: 封面圖片
+        type: image
+        required: true
+        options:
+          media: blog_images
+          path: assets/images/blog
+          categories: [image]
+          extensions: [jpg, jpeg, png, webp, avif, svg]
+          rename: safe
+      - name: cover_alt
+        label: 封面替代文字（Alt）
+        type: string
+        required: true
+        description: 客觀描述圖片內容，不要塞滿關鍵字。
+        options:
+          minlength: 8
+          maxlength: 120
+      - name: featured
+        label: 首頁精選
+        type: boolean
+        default: false
+      - name: published
+        label: 正式發布
+        type: boolean
+        default: true
+        description: 關閉時只保存草稿，不會出現在公開網站。
+      - name: key_takeaways
+        label: 重點摘要
+        type: string
+        required: true
+        list:
+          min: 2
+          max: 5
+        description: 每點都是可獨立理解、可被搜尋或 AI 引用的事實型摘要。
+      - name: faq
+        label: 常見問題
+        type: object
+        list:
+          max: 6
+          collapsible:
+            collapsed: true
+            summary: "{question}"
+        fields:
+          - name: question
+            label: 問題
+            type: string
+            required: true
+          - name: answer
+            label: 回答
+            type: text
+            required: true
+            options:
+              minlength: 20
+              maxlength: 500
+      - name: sources
+        label: 資料來源
+        type: object
+        required: true
+        list:
+          min: 1
+          max: 10
+          collapsible:
+            collapsed: true
+            summary: "{label}"
+        description: 數據、規範、產品特性與風險宣稱都必須提供可查證來源。
+        fields:
+          - name: label
+            label: 來源名稱
+            type: string
+            required: true
+          - name: url
+            label: 來源網址
+            type: string
+            required: true
+            pattern:
+              regex: "^https://.+"
+              message: 必須是 https:// 開頭的完整網址。
+      - name: body
+        label: 文章內容
+        type: rich-text
+        required: true
+        description: 先直接回答問題，再用 H2/H3、步驟、注意事項與可查證來源展開。
+        options:
+          format: markdown
+          switcher: true
+          media: blog_images
+          path: assets/images/blog
+          categories: [image]
+          extensions: [jpg, jpeg, png, webp, avif, svg]
+          rename: safe
+
+actions:
+  - name: validate-content
+    label: 檢查文章與網站建置
+    workflow: content-quality.yml
+    ref: current
+    cancelable: true
+    confirm:
+      title: 執行文章檢查？
+      message: 會檢查必填 SEO/GEO 欄位、連結與 Jekyll 建置。
+      button: 開始檢查

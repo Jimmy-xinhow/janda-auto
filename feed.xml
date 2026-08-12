@@ -1,0 +1,25 @@
+---
+layout: null
+permalink: /feed.xml
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ site.title | xml_escape }}保養文章</title>
+  <subtitle>{{ site.description | xml_escape }}</subtitle>
+  <link href="{{ '/feed.xml' | absolute_url }}" rel="self" type="application/atom+xml"/>
+  <link href="{{ '/blog/' | absolute_url }}" rel="alternate" type="text/html"/>
+  <id>{{ '/blog/' | absolute_url }}</id>
+  <updated>{% if site.posts.first %}{{ site.posts.first.updated_at | default: site.posts.first.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}</updated>
+  <author><name>{{ site.data.site.name | xml_escape }}</name></author>
+  {% for post in site.posts limit: 20 %}<entry>
+    <title>{{ post.title | xml_escape }}</title>
+    <link href="{{ post.url | absolute_url }}" rel="alternate" type="text/html"/>
+    <id>{{ post.url | absolute_url }}</id>
+    <published>{{ post.date | date_to_xmlschema }}</published>
+    <updated>{{ post.updated_at | default: post.date | date_to_xmlschema }}</updated>
+    <author><name>{{ post.author | xml_escape }}</name></author>
+    <category term="{{ post.category | xml_escape }}" label="{{ site.data.categories[post.category] | default: post.category | xml_escape }}"/>
+    <summary type="text">{{ post.description | strip_html | normalize_whitespace | xml_escape }}</summary>
+    <content type="html">{{ post.content | xml_escape }}</content>
+  </entry>{% endfor %}
+</feed>

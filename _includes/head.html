@@ -1,0 +1,56 @@
+{% assign seo_title = page.seo_title | default: page.title | default: site.title %}
+{% assign seo_description = page.description | default: site.description %}
+{% assign canonical_url = page.url | absolute_url %}
+{% assign is_post = false %}
+{% if page.collection == 'posts' %}{% assign is_post = true %}{% endif %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if page.title %}{{ seo_title }}｜{{ site.title }}{% else %}{{ site.title }} — {{ site.tagline }}{% endif %}</title>
+<meta name="description" content="{{ seo_description | strip_html | normalize_whitespace | escape }}">
+<meta name="author" content="{{ page.author | default: site.data.site.name | escape }}">
+{% if page.keywords %}<meta name="keywords" content="{{ page.keywords | join: ', ' | escape }}">{% endif %}
+<meta name="robots" content="{{ page.robots | default: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' }}">
+<link rel="canonical" href="{{ canonical_url }}">
+<link rel="alternate" type="application/rss+xml" href="{{ '/feed.xml' | absolute_url }}" title="{{ site.title }}文章 RSS">
+<link rel="alternate" type="text/plain" href="{{ '/llms.txt' | absolute_url }}" title="llms.txt">
+<link rel="alternate" type="text/plain" href="{{ '/llms-full.txt' | absolute_url }}" title="llms-full.txt">
+
+<meta property="og:title" content="{{ seo_title | escape }}">
+<meta property="og:description" content="{{ seo_description | strip_html | normalize_whitespace | escape }}">
+<meta property="og:type" content="{% if is_post %}article{% else %}website{% endif %}">
+<meta property="og:locale" content="{{ site.locale }}">
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:url" content="{{ canonical_url }}">
+{% if page.cover_image %}
+<meta property="og:image" content="{{ site.url }}{{ page.cover_image }}">
+<meta property="og:image:alt" content="{{ page.cover_alt | escape }}">
+{% endif %}
+{% if is_post %}
+<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+<meta property="article:modified_time" content="{{ page.updated_at | default: page.date | date_to_xmlschema }}">
+<meta property="article:author" content="{{ page.author | escape }}">
+{% for tag in page.tags %}<meta property="article:tag" content="{{ tag | escape }}">{% endfor %}
+{% endif %}
+
+<meta name="twitter:card" content="{% if page.cover_image %}summary_large_image{% else %}summary{% endif %}">
+<meta name="twitter:title" content="{{ seo_title | escape }}">
+<meta name="twitter:description" content="{{ seo_description | strip_html | normalize_whitespace | escape }}">
+{% if page.cover_image %}<meta name="twitter:image" content="{{ site.url }}{{ page.cover_image }}">{% endif %}
+
+<link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "{{ site.url }}{{ site.baseurl }}/#organization",
+  "name": {{ site.data.site.name | jsonify }},
+  "alternateName": {{ site.data.site.short_name | jsonify }},
+  "url": "{{ site.url }}{{ site.baseurl }}/",
+  "description": {{ site.data.site.description | jsonify }},
+  "sameAs": [
+    {{ site.data.site.shop_url | jsonify }},
+    {{ site.data.site.youtube_url | jsonify }},
+    {{ site.data.site.facebook_url | jsonify }}
+  ]
+}
+</script>

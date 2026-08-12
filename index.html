@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -9,6 +11,9 @@
   <meta name="author" content="詹大汽車精品">
   <link rel="canonical" href="https://jimmy-xinhow.github.io/janda-auto/">
   <link rel="alternate" type="text/plain" href="https://jimmy-xinhow.github.io/janda-auto/llms.txt" title="llms.txt">
+  <link rel="alternate" type="text/plain" href="https://jimmy-xinhow.github.io/janda-auto/llms-full.txt" title="llms-full.txt">
+  <link rel="alternate" type="application/rss+xml" href="https://jimmy-xinhow.github.io/janda-auto/feed.xml" title="詹大汽車精品保養文章 RSS">
+  <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
 
   <!-- Open Graph -->
   <meta property="og:title" content="詹大汽車精品 — 汽車美容保養產品與施工流程教學">
@@ -16,7 +21,7 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_TW">
   <meta property="og:site_name" content="詹大汽車精品">
-  <meta property="og:url" content="https://janda-auto.pages.dev">
+  <meta property="og:url" content="https://jimmy-xinhow.github.io/janda-auto/">
 
   <!-- JSON-LD: Organization -->
   <script type="application/ld+json">
@@ -25,7 +30,7 @@
     "@type": "Organization",
     "name": "詹大汽車精品",
     "alternateName": "詹大",
-    "url": "https://janda-auto.pages.dev",
+    "url": "https://jimmy-xinhow.github.io/janda-auto/",
     "description": "詹大汽車精品是專注於汽車美容保養產品研發與施工教學的品牌，提供完整施工邏輯讓車主自己完成專業等級的汽車美容保養。",
     "foundingCountry": "TW",
     "sameAs": [
@@ -231,12 +236,14 @@
 </head>
 <body>
 
+  {% include header.html %}
+
   <!-- Hero -->
   <div class="hero">
     <h1>詹大汽車精品</h1>
     <p>汽車美容保養產品與施工流程教學品牌 — 讓車主不再盲目洗車，用正確流程完成專業等級的汽車美容保養。</p>
     <div class="hero-cta">
-      <a href="https://jimmy-xinhow.github.io/blog/" class="btn" style="background:#245eea;color:white;">閱讀保養文章</a>
+      <a href="{{ '/blog/' | relative_url }}" class="btn" style="background:#245eea;color:white;">閱讀保養文章</a>
       <a href="https://jambolive.tv/shop/19594/product/" target="_blank" rel="noopener" class="btn" style="background:#10b981;color:white;">選購產品</a>
       <a href="https://www.youtube.com/@zd0502" target="_blank" rel="noopener" class="btn btn-yt">施工教學</a>
       <a href="https://www.facebook.com/share/16zjxnFGjZ/" target="_blank" rel="noopener" class="btn btn-fb">粉絲專頁</a>
@@ -374,6 +381,21 @@
     </div>
   </section>
 
+  <!-- Latest articles -->
+  <section aria-labelledby="latest-articles-title">
+    <div class="shell">
+      <div class="section-heading">
+        <span class="eyebrow">最新知識</span>
+        <h2 id="latest-articles-title">汽車美容保養文章</h2>
+        <p style="text-align:center;color:#666;max-width:680px;margin:0 auto 28px;">從問題判斷、正確步驟到注意事項，整理能實際操作並可查證的汽車美容知識。</p>
+      </div>
+      <div class="card-grid">
+        {% for post in site.posts limit: 3 %}{% include post-card.html post=post %}{% endfor %}
+      </div>
+      <p style="text-align:center;margin-top:28px;"><a class="button primary" href="{{ '/blog/' | relative_url }}" style="background:#1a1a3e;color:white;">查看全部保養文章</a></p>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="cta-section">
     <div class="container">
@@ -403,7 +425,7 @@
     <p>&copy; 2026 詹大汽車精品 — 汽車美容保養產品與施工流程教學品牌</p>
     <p style="margin-top:8px;">
       <a href="https://jambolive.tv/shop/19594/product/" target="_blank" rel="noopener">產品商城</a> &middot;
-      <a href="https://jimmy-xinhow.github.io/blog/">保養文章</a> &middot;
+      <a href="{{ '/blog/' | relative_url }}">保養文章</a> &middot;
       <a href="https://www.youtube.com/@zd0502" target="_blank" rel="noopener">YouTube</a> &middot;
       <a href="https://www.facebook.com/share/16zjxnFGjZ/" target="_blank" rel="noopener">Facebook</a>
     </p>

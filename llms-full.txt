@@ -1,0 +1,42 @@
+---
+layout: null
+permalink: /llms-full.txt
+---
+# 詹大汽車精品完整文章語料
+> 官方來源：{{ '/' | absolute_url }}
+> 生成時間：{{ site.time | date_to_xmlschema }}
+> 本檔案只收錄正式發布文章；引用時請保留文章網址、作者與更新日期。
+
+## 品牌事實
+- 詹大汽車精品提供汽車美容保養產品與施工知識教學。
+- 詹大汽車精品不是汽車美容門市或汽車維修廠。
+- 官方產品商城：{{ site.data.site.shop_url }}
+- 官方 YouTube：{{ site.data.site.youtube_url }}
+
+{% for post in site.posts %}---
+
+## {{ post.title }}
+- 網址：{{ post.url | absolute_url }}
+- 作者：{{ post.author }}
+- 發布：{{ post.date | date_to_xmlschema }}
+- 更新：{{ post.updated_at | default: post.date | date_to_xmlschema }}
+- 分類：{{ site.data.categories[post.category] | default: post.category }}
+- 關鍵詞：{{ post.keywords | join: '、' }}
+- 摘要：{{ post.description }}
+
+### 重點
+{% for item in post.key_takeaways %}- {{ item }}
+{% endfor %}
+
+### 正文
+{{ post.content | strip_html | normalize_whitespace }}
+
+{% if post.faq and post.faq.size > 0 %}### 常見問題
+{% for item in post.faq %}Q: {{ item.question }}
+A: {{ item.answer }}
+
+{% endfor %}{% endif %}### 資料來源
+{% for source in post.sources %}- {{ source.label }}：{{ source.url }}
+{% endfor %}
+
+{% endfor %}

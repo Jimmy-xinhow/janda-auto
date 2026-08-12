@@ -1,15 +1,26 @@
+---
+layout: null
+permalink: /sitemap.xml
+---
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://janda-auto.pages.dev/</loc>
-    <lastmod>2026-03-27</lastmod>
+    <loc>{{ '/' | absolute_url }}</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://janda-auto.pages.dev/llms.txt</loc>
-    <lastmod>2026-03-27</lastmod>
+    <loc>{{ '/blog/' | absolute_url }}</loc>
+    <lastmod>{% if site.posts.first %}{{ site.posts.first.updated_at | default: site.posts.first.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
+  {% for post in site.posts %}<url>
+    <loc>{{ post.url | absolute_url }}</loc>
+    <lastmod>{{ post.updated_at | default: post.date | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    {% if post.cover_image %}<image:image><image:loc>{{ site.url }}{{ post.cover_image }}</image:loc><image:caption>{{ post.cover_alt | xml_escape }}</image:caption></image:image>{% endif %}
+  </url>{% endfor %}
 </urlset>
