@@ -1,20 +1,197 @@
 ---
-layout: default
-title: 文章管理入口
-description: 詹大汽車精品部落格文章管理入口，限受邀編輯者登入使用。
 permalink: /admin/
-robots: noindex,nofollow
+robots: noindex,nofollow,noarchive
 sitemap: false
 ---
-<section class="blog-hero">
-  <div class="shell narrow">
-    <span class="eyebrow">STAFF ONLY</span>
-    <h1>文章管理入口</h1>
-    <p>此入口提供受邀編輯者新增、修改與下架保養文章。登入後請選擇 Jimmy-xinhow/janda-auto 專案。</p>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;">
-      <a class="button primary" href="https://app.pagescms.org" target="_blank" rel="noopener noreferrer">登入文章管理系統</a>
-      <a class="button primary" href="{{ '/blog/' | relative_url }}">查看正式文章</a>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="description" content="詹大汽車精品授權人員使用的文章管理後台。">
+  <link rel="canonical" href="{{ '/admin/' | absolute_url }}">
+  <meta property="og:title" content="文章管理後台｜詹大汽車精品">
+  <meta property="og:description" content="詹大汽車精品授權人員使用的文章管理後台。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ '/admin/' | absolute_url }}">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.geovault.app; img-src 'self' https: data:; script-src 'self'; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+  <title>文章管理後台｜詹大汽車精品</title>
+  <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ '/assets/css/admin.css' | relative_url }}">
+  <script src="{{ '/assets/js/admin.js' | relative_url }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳至主要內容</a>
+  <header class="admin-header">
+    <a class="brand" href="{{ '/' | relative_url }}" aria-label="回到詹大汽車精品首頁">
+      <span class="brand-mark" aria-hidden="true">詹</span>
+      <span><strong>詹大汽車精品</strong><small>文章管理後台</small></span>
+    </a>
+    <div class="header-actions">
+      <span id="session-label" class="session-label" hidden></span>
+      <button id="logout-button" class="button ghost" type="button" hidden>安全登出</button>
+      <a class="button ghost" href="{{ '/blog/' | relative_url }}" target="_blank" rel="noopener">查看部落格</a>
     </div>
-    <p style="margin-top:20px;color:#aebbd5;font-size:.9rem;">未受邀帳號無法編輯內容。若需要權限，請聯絡網站管理者。</p>
-  </div>
-</section>
+  </header>
+
+  <main id="main-content">
+    <section id="login-view" class="auth-shell" aria-labelledby="login-title">
+      <div class="auth-card">
+        <p class="eyebrow">STAFF ACCESS</p>
+        <h1 id="login-title">登入文章管理後台</h1>
+        <p class="lead">供授權人員建立、預覽與上架文章。帳號閒置或重新整理後需再次登入。</p>
+        <form id="login-form" novalidate>
+          <label for="login-username">管理者帳號</label>
+          <input id="login-username" name="username" type="text" value="mio" autocomplete="username" required minlength="3" maxlength="32">
+          <label for="login-password">密碼</label>
+          <div class="password-row">
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128">
+            <button class="reveal-button" type="button" data-password-toggle="login-password" aria-label="顯示密碼">顯示</button>
+          </div>
+          <button id="login-submit" class="button primary full" type="submit">登入後台</button>
+          <p id="login-message" class="form-message" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section id="password-view" class="auth-shell" aria-labelledby="password-title" hidden>
+      <div class="auth-card wide">
+        <p class="eyebrow">FIRST SIGN-IN</p>
+        <h1 id="password-title">先設定 Mio 的新密碼</h1>
+        <p class="lead">首次登入必須更換臨時密碼。新密碼至少 12 碼，並包含英文大小寫、數字與符號。</p>
+        <form id="password-form" novalidate>
+          <label for="current-password">目前的臨時密碼</label>
+          <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required maxlength="128">
+          <label for="new-password">新密碼</label>
+          <input id="new-password" name="newPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="72">
+          <label for="confirm-password">再次輸入新密碼</label>
+          <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="72">
+          <button id="password-submit" class="button primary full" type="submit">儲存新密碼並進入後台</button>
+          <p id="password-message" class="form-message" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section id="dashboard-view" class="dashboard" hidden>
+      <aside class="sidebar" aria-label="文章工具">
+        <button id="new-article-button" class="button primary full" type="button">＋ 新增文章</button>
+        <div class="filter-group">
+          <label for="article-search">搜尋文章</label>
+          <input id="article-search" type="search" placeholder="輸入標題或網址代稱">
+          <label for="status-filter">文章狀態</label>
+          <select id="status-filter">
+            <option value="">全部</option>
+            <option value="draft">草稿</option>
+            <option value="published">已發布</option>
+          </select>
+        </div>
+        <div class="list-heading">
+          <strong>文章清單</strong>
+          <span id="article-count">0 篇</span>
+        </div>
+        <div id="article-list" class="article-list" aria-live="polite"></div>
+      </aside>
+
+      <section class="workspace" aria-labelledby="workspace-title">
+        <div id="empty-workspace" class="empty-state">
+          <span aria-hidden="true">✦</span>
+          <h1 id="workspace-title">選擇文章，或建立新草稿</h1>
+          <p>上架前系統會檢查標題、描述、關鍵字、首圖、FAQ、可信來源與文章結構。</p>
+        </div>
+
+        <form id="article-form" class="editor" novalidate hidden>
+          <div class="editor-topbar">
+            <div>
+              <p id="editor-status" class="status-pill draft">草稿</p>
+              <h1 id="editor-heading">新增文章</h1>
+              <p id="save-state" class="save-state" role="status" aria-live="polite">尚未儲存</p>
+            </div>
+            <div class="editor-actions">
+              <button id="delete-button" class="button danger" type="button" hidden>刪除草稿</button>
+              <button id="unpublish-button" class="button warning" type="button" hidden>下架</button>
+              <button id="save-button" class="button secondary" type="submit">儲存草稿</button>
+              <button id="publish-button" class="button primary" type="button">通過檢查並發布</button>
+            </div>
+          </div>
+
+          <div class="editor-grid">
+            <div class="form-panel">
+              <section class="form-section">
+                <div class="section-title"><span>01</span><div><h2>搜尋摘要</h2><p>決定搜尋結果與社群分享時顯示的內容。</p></div></div>
+                <label for="article-title">文章標題 <small>12–70 字</small></label>
+                <input id="article-title" name="title" type="text" required maxlength="70">
+                <div class="field-count" data-count-for="article-title"></div>
+                <label for="article-slug">網址代稱 <small>小寫英文、數字與連字號</small></label>
+                <div class="slug-row"><span>/blog/</span><input id="article-slug" name="slug" type="text" required maxlength="100" pattern="[a-z0-9]+(?:-[a-z0-9]+)*"><span>/</span></div>
+                <label for="article-description">SEO 描述 <small>70–160 字</small></label>
+                <textarea id="article-description" name="description" rows="4" maxlength="160"></textarea>
+                <div class="field-count" data-count-for="article-description"></div>
+              </section>
+
+              <section class="form-section">
+                <div class="section-title"><span>02</span><div><h2>文章設定</h2><p>分類與主題詞會用於站內篩選、內部連結與結構化資料。</p></div></div>
+                <div class="two-columns">
+                  <div><label for="article-category">文章分類</label><select id="article-category" name="category" required></select></div>
+                  <div><label for="article-author">作者</label><input id="article-author" name="author" type="text" maxlength="40" value="Mio"></div>
+                </div>
+                <label for="article-tags">標籤 <small>2–8 個，以逗號分隔</small></label>
+                <input id="article-tags" name="tags" type="text" placeholder="洗車教學, 漆面保養">
+                <label for="article-keywords">SEO 關鍵字 <small>2–10 個，以逗號分隔</small></label>
+                <input id="article-keywords" name="keywords" type="text" placeholder="汽車洗車步驟, 洗車注意事項">
+                <label for="article-reviewer">內容審閱者 <small>選填</small></label>
+                <input id="article-reviewer" name="reviewedBy" type="text" maxlength="40">
+                <label class="check-row"><input id="article-featured" name="featured" type="checkbox">設為精選文章</label>
+              </section>
+
+              <section class="form-section">
+                <div class="section-title"><span>03</span><div><h2>首圖</h2><p>支援 PNG、JPEG、WebP、GIF，檔案上限 5 MB。</p></div></div>
+                <label for="cover-file">上傳首圖</label>
+                <div class="upload-row"><input id="cover-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><button id="upload-button" class="button secondary" type="button">上傳圖片</button></div>
+                <label for="article-cover-url">首圖網址</label>
+                <input id="article-cover-url" name="coverImageUrl" type="url" inputmode="url" placeholder="https://...">
+                <label for="article-cover-alt">圖片替代文字 <small>8–120 字</small></label>
+                <input id="article-cover-alt" name="coverAlt" type="text" maxlength="120">
+                <figure id="cover-preview" class="cover-preview" hidden><img id="cover-preview-image" alt=""><figcaption>首圖預覽</figcaption></figure>
+              </section>
+
+              <section class="form-section content-section">
+                <div class="section-title"><span>04</span><div><h2>文章正文</h2><p>至少 800 字與兩個 H2 小標題；使用 Markdown 撰寫。</p></div></div>
+                <div class="markdown-toolbar" aria-label="Markdown 快速工具">
+                  <button type="button" data-md-prefix="## ">H2</button><button type="button" data-md-prefix="### ">H3</button><button type="button" data-md-wrap="**">粗體</button><button type="button" data-md-prefix="- ">清單</button><button type="button" data-md-prefix="> ">引言</button>
+                </div>
+                <div class="content-tabs" role="tablist"><button class="active" id="write-tab" type="button" role="tab" aria-selected="true">撰寫</button><button id="preview-tab" type="button" role="tab" aria-selected="false">安全預覽</button></div>
+                <textarea id="article-content" name="content" rows="24" maxlength="60000" aria-label="文章正文"></textarea>
+                <div id="markdown-preview" class="markdown-preview prose" hidden></div>
+                <div class="field-count" data-count-for="article-content"></div>
+              </section>
+
+              <section class="form-section">
+                <div class="section-title"><span>05</span><div><h2>GEO 引用資訊</h2><p>摘要、FAQ 與可驗證來源能協助搜尋引擎與 AI 正確理解文章。</p></div></div>
+                <label for="article-takeaways">重點摘要 <small>2–5 點，每行一點</small></label>
+                <textarea id="article-takeaways" rows="5"></textarea>
+                <div class="repeater-heading"><h3>常見問題</h3><button id="add-faq-button" class="button small secondary" type="button">＋ 新增 FAQ</button></div>
+                <div id="faq-list" class="repeater-list"></div>
+                <div class="repeater-heading"><h3>可信資料來源</h3><button id="add-source-button" class="button small secondary" type="button">＋ 新增來源</button></div>
+                <div id="source-list" class="repeater-list"></div>
+              </section>
+            </div>
+
+            <aside class="quality-panel" aria-labelledby="quality-title">
+              <div class="quality-sticky">
+                <div class="score-ring"><strong id="quality-score">0</strong><span>/100</span></div>
+                <h2 id="quality-title">發布完整度</h2>
+                <p id="quality-summary">儲存後會顯示正式檢查結果。</p>
+                <ul id="quality-list" class="quality-list"></ul>
+                <p class="quality-note">品質門檻未通過時，系統不會公開文章。</p>
+              </div>
+            </aside>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

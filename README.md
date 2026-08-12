@@ -2,18 +2,18 @@
 
 正式網站：<https://jimmy-xinhow.github.io/janda-auto/>
 
-此專案由 GitHub Pages 發布，文章使用 Jekyll 建置，Mio 可透過 Pages CMS 的圖形化介面新增與更新文章。文章原始檔保存在 `_posts/`，圖片保存在 `assets/images/blog/`，每次修改都有 Git 版本紀錄。
+此專案由 GitHub Pages 發布，文章使用 Jekyll 建置。Mio 透過詹大網站自有的登入後台新增與更新文章；帳號、草稿與圖片儲存在 Geovault 後端，已發布內容由 GitHub Actions 定時同步為可被搜尋引擎與 AI 爬取的靜態頁面。
 
 ## Mio 上稿入口
 
-1. 前往 <https://jimmy-xinhow.github.io/janda-auto/admin/>，再按「登入文章管理系統」。
-2. 使用被邀請的電子郵件登入，或以有此專案權限的 GitHub 帳號登入。
-3. 選擇 `Jimmy-xinhow/janda-auto`。
-4. 開啟「部落格文章」，按「新增」。
-5. 完成所有必填欄位後儲存；GitHub Pages 會自動重新發布。
-6. 先查看 GitHub Actions 的 `Content quality` 是否通過，再到正式網站確認文章。
+1. 前往 <https://jimmy-xinhow.github.io/janda-auto/admin/>。
+2. 以 Mio 的管理者帳號登入；第一次登入需更換臨時密碼。
+3. 按「新增文章」，完成搜尋摘要、分類、首圖、正文、FAQ 與來源。
+4. 先儲存草稿，依右側 SEO/GEO 完整度修正未通過項目。
+5. 按「通過檢查並發布」；系統每五分鐘同步一次，通常數分鐘內會出現在正式部落格。
+6. 到正式文章頁確認排版、圖片、canonical、結構化資料與分享預覽。
 
-Mio 不需要編輯 HTML，也不應直接改 `_layouts/`、`_includes/`、`_config.yml` 或 `.pages.yml`。
+Mio 不需要 GitHub 帳號，也不需要編輯 HTML；後台不會提供網站程式碼權限。
 
 ## 上稿前檢查
 
@@ -57,10 +57,9 @@ npm run dev
 
 開啟 <http://127.0.0.1:3333/janda-auto/>。
 
-## 管理者一次性設定
+## 發布架構
 
-1. 在 Pages CMS 安裝 GitHub App，並只授權 `Jimmy-xinhow/janda-auto` repository。
-2. 在 Pages CMS 的 Collaborators 功能以 Mio 的工作信箱發送邀請；Mio 不需要 GitHub 帳號。若改用 GitHub 登入，則只授予此 repository 所需的存取權。
-3. Mio 完成第一次登入後，以現有文章建立一篇草稿、上傳測試圖片並儲存，確認 `Content quality` 通過。
-
-Pages CMS 只提供編輯層，內容與發布仍以 GitHub repository 為權威來源。
+- 後台登入與文章 API：`api.geovault.app` 的獨立網站 CMS 模組。
+- 公開文章同步：`.github/workflows/deploy-pages.yml` 每五分鐘讀取已發布內容。
+- 靜態內容輸出：`_posts/cms/` 只由同步程式管理，草稿不會進入 repository 或公開建置。
+- GitHub Pages 是公開頁面的發布權威；CMS 資料庫是帳號、草稿與編輯狀態的權威。

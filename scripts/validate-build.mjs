@@ -7,7 +7,7 @@ const errors = [];
 const required = [
   'index.html', 'blog/index.html', 'blog/janda-auto-care-blog/index.html',
   'robots.txt', 'sitemap.xml', 'feed.xml', 'llms.txt', 'llms-full.txt', '404.html', 'admin/index.html',
-  'assets/css/site.css', 'assets/js/blog.js', 'assets/js/article.js', 'assets/favicon.svg',
+  'assets/css/site.css', 'assets/css/admin.css', 'assets/js/blog.js', 'assets/js/article.js', 'assets/js/admin.js', 'assets/favicon.svg',
 ];
 
 function fail(message) { errors.push(message); }

@@ -17,7 +17,9 @@
     "keywords": {{ page.keywords | join: ', ' | jsonify }},
     "author": {"@type": "Person", "name": {{ page.author | jsonify }}},
     "publisher": {"@id": "{{ site.url }}{{ site.baseurl }}/#organization"},
-    "image": "{{ site.url }}{{ page.cover_image }}",
+    {% assign article_cover_url = page.cover_image %}
+    {% unless page.cover_image contains '://' %}{% assign article_cover_url = page.cover_image | prepend: site.url %}{% endunless %}
+    "image": "{{ article_cover_url }}",
     "citation": [{% for source in page.sources %}{{ source.url | jsonify }}{% unless forloop.last %},{% endunless %}{% endfor %}]
   }
   </script>

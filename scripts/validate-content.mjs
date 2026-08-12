@@ -63,7 +63,9 @@ function validatePost(file) {
   if (!categories.has(data.category)) fail(relative, `category 不在允許清單：${data.category}`);
   if (!listInRange(data.tags, 2, 8)) fail(relative, 'tags 必須有 2–8 個');
   if (!listInRange(data.keywords, 2, 10)) fail(relative, 'keywords 必須有 2–10 個');
-  if (typeof data.cover_image !== 'string' || !data.cover_image.startsWith('/janda-auto/assets/images/blog/')) fail(relative, 'cover_image 必須位於 /janda-auto/assets/images/blog/');
+  const localCover = typeof data.cover_image === 'string' && data.cover_image.startsWith('/janda-auto/assets/images/blog/');
+  const remoteCover = typeof data.cover_image === 'string' && /^https:\/\//.test(data.cover_image);
+  if (!localCover && !remoteCover) fail(relative, 'cover_image 必須是站內部落格圖片或 HTTPS 圖片');
   if (!inRange(data.cover_alt, 8, 120)) fail(relative, 'cover_alt 必須是 8–120 個字元');
   if (!listInRange(data.key_takeaways, 2, 5)) fail(relative, 'key_takeaways 必須有 2–5 個');
   if (!listInRange(data.sources, 1, 10)) fail(relative, 'sources 必須有 1–10 個');
@@ -97,14 +99,6 @@ for (const relative of ['index.html', 'robots.txt', 'sitemap.xml', 'llms.txt', '
   forbiddenPublicText.forEach((needle) => {
     if (source.toLocaleLowerCase('zh-TW').includes(needle.toLocaleLowerCase('zh-TW'))) fail(relative, `包含失效或禁止公開內容：${needle}`);
   });
-}
-
-let pagesConfig;
-try { pagesConfig = parse(fs.readFileSync(path.join(root, '.pages.yml'), 'utf8')); } catch (error) { fail('.pages.yml', `無法解析：${error.message}`); }
-const postsCollection = pagesConfig?.content?.find((item) => item.name === 'posts');
-if (!postsCollection || postsCollection.path !== '_posts') fail('.pages.yml', '必須設定 _posts 文章 collection');
-for (const required of ['title', 'slug', 'description', 'date', 'author', 'category', 'tags', 'keywords', 'cover_image', 'cover_alt', 'key_takeaways', 'sources', 'body']) {
-  if (!postsCollection?.fields?.some((field) => field.name === required && field.required)) fail('.pages.yml', `${required} 必須是 CMS 必填欄位`);
 }
 
 warnings.forEach((message) => console.warn(`WARN ${message}`));

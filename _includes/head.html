@@ -1,6 +1,8 @@
 {% assign seo_title = page.seo_title | default: page.title | default: site.title %}
 {% assign seo_description = page.description | default: site.description %}
 {% assign canonical_url = page.url | absolute_url %}
+{% assign cover_url = page.cover_image %}
+{% unless page.cover_image contains '://' %}{% assign cover_url = page.cover_image | prepend: site.url %}{% endunless %}
 {% assign is_post = false %}
 {% if page.collection == 'posts' %}{% assign is_post = true %}{% endif %}
 <meta charset="UTF-8">
@@ -23,7 +25,7 @@
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:url" content="{{ canonical_url }}">
 {% if page.cover_image %}
-<meta property="og:image" content="{{ site.url }}{{ page.cover_image }}">
+<meta property="og:image" content="{{ cover_url }}">
 <meta property="og:image:alt" content="{{ page.cover_alt | escape }}">
 {% endif %}
 {% if is_post %}
@@ -36,7 +38,7 @@
 <meta name="twitter:card" content="{% if page.cover_image %}summary_large_image{% else %}summary{% endif %}">
 <meta name="twitter:title" content="{{ seo_title | escape }}">
 <meta name="twitter:description" content="{{ seo_description | strip_html | normalize_whitespace | escape }}">
-{% if page.cover_image %}<meta name="twitter:image" content="{{ site.url }}{{ page.cover_image }}">{% endif %}
+{% if page.cover_image %}<meta name="twitter:image" content="{{ cover_url }}">{% endif %}
 
 <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
 <script type="application/ld+json">
