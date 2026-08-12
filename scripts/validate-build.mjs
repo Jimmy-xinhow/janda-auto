@@ -7,7 +7,7 @@ const errors = [];
 const required = [
   'index.html', 'blog/index.html', 'blog/janda-auto-care-blog/index.html',
   'robots.txt', 'sitemap.xml', 'feed.xml', 'llms.txt', 'llms-full.txt', '404.html', 'admin/index.html',
-  'assets/css/site.css', 'assets/js/blog.js', 'assets/js/article.js',
+  'assets/css/site.css', 'assets/js/blog.js', 'assets/js/article.js', 'assets/favicon.svg',
 ];
 
 function fail(message) { errors.push(message); }
@@ -41,6 +41,7 @@ if (fs.existsSync(root)) {
       scripts.forEach((match, index) => {
         try { JSON.parse(match[1]); } catch (error) { fail(`${relative} JSON-LD #${index + 1} 無效：${error.message}`); }
       });
+      if (source.includes('本文已由 進行內容審閱')) fail(`${relative} 顯示空白審閱者`);
     }
   });
 

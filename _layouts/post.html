@@ -63,15 +63,17 @@
         <span class="eyebrow">{{ site.data.categories[page.category] | default: page.category }}</span>
         <h1>{{ page.title }}</h1>
         <p class="article-deck">{{ page.description }}</p>
-        {% assign plain_words = content | strip_html | number_of_words %}
-        {% assign reading_minutes = plain_words | divided_by: 350 | plus: 1 %}
+        {% assign plain_text = content | strip_html | strip_newlines %}
+        {% assign content_characters = plain_text | size %}
+        {% assign reading_minutes = content_characters | divided_by: 500 | plus: 1 %}
         <div class="article-meta">
           <span>作者：{{ page.author }}</span>
           <time datetime="{{ page.date | date_to_xmlschema }}">發布：{{ page.date | date: '%Y 年 %-m 月 %-d 日' }}</time>
           {% if page.updated_at %}<time datetime="{{ page.updated_at | date_to_xmlschema }}">更新：{{ page.updated_at | date: '%Y 年 %-m 月 %-d 日' }}</time>{% endif %}
           <span>約 {{ reading_minutes }} 分鐘閱讀</span>
         </div>
-        {% if page.reviewed_by %}<p class="review-note">本文已由 {{ page.reviewed_by }} 進行內容審閱。</p>{% endif %}
+        {% assign reviewer = page.reviewed_by | strip %}
+        {% if reviewer != '' %}<p class="review-note">本文已由 {{ reviewer }} 進行內容審閱。</p>{% endif %}
       </header>
 
       <figure class="article-cover">
