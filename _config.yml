@@ -39,3 +39,8 @@ exclude:
   - Gemfile.lock
   - README.md
   - AGENTS.md
+  - vendor
+  - vendor/bundle
+  - vendor/cache
+  - vendor/gems
+  - vendor/ruby
