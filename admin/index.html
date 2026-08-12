@@ -15,7 +15,7 @@ sitemap: false
   <meta property="og:description" content="詹大汽車精品授權人員使用的文章管理後台。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ '/admin/' | absolute_url }}">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.geovault.app; img-src 'self' https: data:; script-src 'self'; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.geovault.app; img-src 'self' https: data:; script-src 'self'; style-src 'self' blob:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'self' blob:; upgrade-insecure-requests">
   <title>文章管理後台｜詹大汽車精品</title>
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ '/assets/css/admin.css' | relative_url }}">
@@ -59,14 +59,14 @@ sitemap: false
       <div class="auth-card wide">
         <p class="eyebrow">FIRST SIGN-IN</p>
         <h1 id="password-title">先設定 Mio 的新密碼</h1>
-        <p class="lead">首次登入必須更換臨時密碼。新密碼至少 12 碼，並包含英文大小寫、數字與符號。</p>
+        <p class="lead">首次登入必須更換臨時密碼。新密碼請設定為 8 碼純數字。</p>
         <form id="password-form" novalidate>
           <label for="current-password">目前的臨時密碼</label>
           <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required maxlength="128">
           <label for="new-password">新密碼</label>
-          <input id="new-password" name="newPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="72">
+          <input id="new-password" name="newPassword" type="password" inputmode="numeric" pattern="[0-9]{8}" autocomplete="new-password" required minlength="8" maxlength="8">
           <label for="confirm-password">再次輸入新密碼</label>
-          <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required minlength="12" maxlength="72">
+          <input id="confirm-password" name="confirmPassword" type="password" inputmode="numeric" pattern="[0-9]{8}" autocomplete="new-password" required minlength="8" maxlength="8">
           <button id="password-submit" class="button primary full" type="submit">儲存新密碼並進入後台</button>
           <p id="password-message" class="form-message" role="alert" aria-live="polite"></p>
         </form>
@@ -115,6 +115,75 @@ sitemap: false
             </div>
           </div>
 
+          <section class="editor-studio-section" aria-labelledby="content-title">
+            <div class="studio-heading">
+              <div>
+                <p class="eyebrow">ARTICLE STUDIO</p>
+                <h2 id="content-title">文章正文編輯器</h2>
+                <p>可視化、Markdown、HTML/CSS 與純文字皆可直接編輯；HTML 與 CSS 儲存前會由伺服器安全清理。</p>
+              </div>
+              <div id="content-count" class="content-count" aria-live="polite">0 字</div>
+            </div>
+
+            <div class="editor-modebar" role="tablist" aria-label="文章編輯模式">
+              <button type="button" role="tab" data-editor-mode="visual">視覺編輯器</button>
+              <button type="button" role="tab" data-editor-mode="markdown">Markdown</button>
+              <button type="button" role="tab" data-editor-mode="html">HTML / CSS</button>
+              <button type="button" role="tab" data-editor-mode="plain">純文字</button>
+            </div>
+
+            <div class="rich-toolbar" aria-label="文章格式工具">
+              <button type="button" data-command="bold" title="粗體"><strong>B</strong></button>
+              <button type="button" data-command="italic" title="斜體"><em>I</em></button>
+              <button type="button" data-command="underline" title="底線"><u>U</u></button>
+              <button type="button" data-command="strikeThrough" title="刪除線"><s>S</s></button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button type="button" data-block="h2">H2</button>
+              <button type="button" data-block="h3">H3</button>
+              <button type="button" data-command="insertUnorderedList" title="項目清單">清單</button>
+              <button type="button" data-block="blockquote" title="引言">引言</button>
+              <button type="button" data-command="formatCode" title="程式碼">Code</button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button type="button" data-command="justifyLeft" title="靠左">靠左</button>
+              <button type="button" data-command="justifyCenter" title="置中">置中</button>
+              <button type="button" data-command="justifyRight" title="靠右">靠右</button>
+              <button type="button" data-command="createLink" title="插入連結">連結</button>
+              <button type="button" data-command="insertImage" title="插入圖片">圖片</button>
+              <button type="button" data-command="undo" title="復原">復原</button>
+              <button type="button" data-command="redo" title="重做">重做</button>
+            </div>
+
+            <div class="editor-studio">
+              <div class="editor-source-pane">
+                <div id="visual-editor" class="visual-editor prose" data-editor-panel="visual" contenteditable="true" role="textbox" aria-multiline="true" aria-label="視覺化文章正文" data-placeholder="在這裡開始撰寫，或直接貼上 Word / HTML 內容…"></div>
+                <textarea id="article-content" data-editor-panel="markdown" rows="30" maxlength="60000" aria-label="Markdown 文章正文" placeholder="使用 Markdown 撰寫文章…" hidden></textarea>
+                <div id="html-css-panel" class="html-css-panel" data-editor-panel="html" hidden>
+                  <label for="article-html">文章 HTML</label>
+                  <textarea id="article-html" rows="22" maxlength="60000" spellcheck="false" placeholder="貼上文章 HTML；script、iframe、事件屬性與危險網址會被移除。"></textarea>
+                  <label for="article-css">文章專用 CSS <small>只會作用在這篇文章內</small></label>
+                  <textarea id="article-css" rows="10" maxlength="12000" spellcheck="false" placeholder="例如：h2 { color: #b68a24; }"></textarea>
+                </div>
+                <textarea id="article-plain" data-editor-panel="plain" rows="30" maxlength="60000" aria-label="純文字文章正文" placeholder="貼上或編輯純文字內容…" hidden></textarea>
+                <p id="editor-mode-note" class="editor-mode-note">可直接從 Word 貼上，系統會移除不安全與多餘格式。</p>
+              </div>
+
+              <aside class="live-preview" aria-labelledby="preview-title">
+                <div class="preview-toolbar">
+                  <strong id="preview-title">即時預覽</strong>
+                  <div class="device-switcher" role="group" aria-label="預覽裝置">
+                    <button class="active" type="button" data-preview-device="desktop" aria-pressed="true">桌機</button>
+                    <button type="button" data-preview-device="tablet" aria-pressed="false">平板</button>
+                    <button type="button" data-preview-device="mobile" aria-pressed="false">手機</button>
+                  </div>
+                </div>
+                <div id="preview-frame-shell" class="preview-frame-shell desktop">
+                  <iframe id="article-preview-frame" title="文章安全預覽" sandbox="" referrerpolicy="no-referrer"></iframe>
+                </div>
+                <p id="preview-status" class="preview-status" role="status" aria-live="polite">輸入內容後會自動更新安全預覽。</p>
+              </aside>
+            </div>
+          </section>
+
           <div class="editor-grid">
             <div class="form-panel">
               <section class="form-section">
@@ -155,19 +224,8 @@ sitemap: false
                 <figure id="cover-preview" class="cover-preview" hidden><img id="cover-preview-image" alt=""><figcaption>首圖預覽</figcaption></figure>
               </section>
 
-              <section class="form-section content-section">
-                <div class="section-title"><span>04</span><div><h2>文章正文</h2><p>至少 800 字與兩個 H2 小標題；使用 Markdown 撰寫。</p></div></div>
-                <div class="markdown-toolbar" aria-label="Markdown 快速工具">
-                  <button type="button" data-md-prefix="## ">H2</button><button type="button" data-md-prefix="### ">H3</button><button type="button" data-md-wrap="**">粗體</button><button type="button" data-md-prefix="- ">清單</button><button type="button" data-md-prefix="> ">引言</button>
-                </div>
-                <div class="content-tabs" role="tablist"><button class="active" id="write-tab" type="button" role="tab" aria-selected="true">撰寫</button><button id="preview-tab" type="button" role="tab" aria-selected="false">安全預覽</button></div>
-                <textarea id="article-content" name="content" rows="24" maxlength="60000" aria-label="文章正文"></textarea>
-                <div id="markdown-preview" class="markdown-preview prose" hidden></div>
-                <div class="field-count" data-count-for="article-content"></div>
-              </section>
-
               <section class="form-section">
-                <div class="section-title"><span>05</span><div><h2>GEO 引用資訊</h2><p>摘要、FAQ 與可驗證來源能協助搜尋引擎與 AI 正確理解文章。</p></div></div>
+                <div class="section-title"><span>04</span><div><h2>GEO 引用資訊</h2><p>摘要、FAQ 與可驗證來源能協助搜尋引擎與 AI 正確理解文章。</p></div></div>
                 <label for="article-takeaways">重點摘要 <small>2–5 點，每行一點</small></label>
                 <textarea id="article-takeaways" rows="5"></textarea>
                 <div class="repeater-heading"><h3>常見問題</h3><button id="add-faq-button" class="button small secondary" type="button">＋ 新增 FAQ</button></div>

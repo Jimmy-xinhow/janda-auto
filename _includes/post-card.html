@@ -6,7 +6,7 @@
   </a>
   <div class="post-card-body">
     <div class="post-card-meta">
-      <span>{{ site.data.categories[post.category] | default: post.category }}</span>
+      <a href="{{ '/blog/categories/' | append: post.category | append: '/' | relative_url }}">{{ site.data.categories[post.category] | default: post.category }}</a>
       <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%Y.%m.%d' }}</time>
     </div>
     <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>

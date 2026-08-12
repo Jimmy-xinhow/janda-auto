@@ -1,0 +1,42 @@
+---
+layout: default
+title: 汽車美容文章分類
+description: 依洗車、去汙、車漆保養、鍍膜、內裝與產品選購主題，瀏覽詹大汽車精品整理的汽車美容文章分類。
+permalink: /blog/categories/
+---
+<section class="category-hero">
+  <div class="shell narrow">
+    <nav class="breadcrumbs" aria-label="麵包屑">
+      <a href="{{ '/' | relative_url }}">首頁</a><span aria-hidden="true">/</span>
+      <a href="{{ '/blog/' | relative_url }}">保養文章</a><span aria-hidden="true">/</span>
+      <span aria-current="page">文章分類</span>
+    </nav>
+    <span class="eyebrow">TOPIC DIRECTORY</span>
+    <h1>汽車美容文章分類</h1>
+    <p>依照目前要處理的車況與主題，直接進入對應分類，找到完整步驟、注意事項與產品選擇建議。</p>
+  </div>
+</section>
+<section class="blog-section">
+  <div class="shell category-directory-grid">
+    {% for item in site.data.category_details %}
+    {% assign category_posts = site.posts | where: 'category', item[0] %}
+    <a class="category-directory-card" href="{{ '/blog/categories/' | append: item[0] | append: '/' | relative_url }}">
+      <span>{{ category_posts.size }} 篇文章</span>
+      <h2>{{ item[1].name }}</h2>
+      <p>{{ item[1].description }}</p>
+      <strong>查看分類 <span aria-hidden="true">→</span></strong>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"BreadcrumbList",
+  "itemListElement":[
+    {"@type":"ListItem","position":1,"name":"首頁","item":"{{ '/' | absolute_url }}"},
+    {"@type":"ListItem","position":2,"name":"保養文章","item":"{{ '/blog/' | absolute_url }}"},
+    {"@type":"ListItem","position":3,"name":"文章分類","item":"{{ page.url | absolute_url }}"}
+  ]
+}
+</script>

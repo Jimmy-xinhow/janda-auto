@@ -13,6 +13,10 @@ permalink: /llms-full.txt
 - 官方產品商城：{{ site.data.site.shop_url }}
 - 官方 YouTube：{{ site.data.site.youtube_url }}
 
+## 文章分類
+{% for item in site.data.category_details %}- [{{ item[1].name }}]({{ '/blog/categories/' | append: item[0] | append: '/' | absolute_url }})：{{ item[1].description }}
+{% endfor %}
+
 {% for post in site.posts %}---
 
 ## {{ post.title }}

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="{{ site.lang }}">
+<head>
+  {% include head.html %}
+  {% assign category_info = site.data.category_details[page.category] %}
+  {% assign category_posts = site.posts | where: 'category', page.category %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": {{ category_info.name | jsonify }},
+    "description": {{ category_info.description | jsonify }},
+    "url": "{{ page.url | absolute_url }}",
+    "isPartOf": {"@type": "Blog", "@id": "{{ '/blog/' | absolute_url }}"},
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": {{ category_posts.size }},
+      "itemListElement": [{% for post in category_posts %}{"@type":"ListItem","position":{{ forloop.index }},"url":"{{ post.url | absolute_url }}","name":{{ post.title | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}]
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type":"ListItem","position":1,"name":"首頁","item":"{{ '/' | absolute_url }}"},
+      {"@type":"ListItem","position":2,"name":"保養文章","item":"{{ '/blog/' | absolute_url }}"},
+      {"@type":"ListItem","position":3,"name":"文章分類","item":"{{ '/blog/categories/' | absolute_url }}"},
+      {"@type":"ListItem","position":4,"name":{{ category_info.name | jsonify }},"item":"{{ page.url | absolute_url }}"}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#category-articles">跳到分類文章</a>
+  {% include header.html %}
+  <main>
+    <section class="category-hero">
+      <div class="shell narrow">
+        <nav class="breadcrumbs" aria-label="麵包屑">
+          <a href="{{ '/' | relative_url }}">首頁</a><span aria-hidden="true">/</span>
+          <a href="{{ '/blog/' | relative_url }}">保養文章</a><span aria-hidden="true">/</span>
+          <a href="{{ '/blog/categories/' | relative_url }}">文章分類</a><span aria-hidden="true">/</span>
+          <span aria-current="page">{{ category_info.name }}</span>
+        </nav>
+        <span class="eyebrow">ARTICLE CATEGORY</span>
+        <h1>{{ category_info.name }}</h1>
+        <p>{{ category_info.description }}</p>
+        <span class="category-count">目前共 {{ category_posts.size }} 篇文章</span>
+      </div>
+    </section>
+
+    <section id="category-articles" class="blog-section">
+      <div class="shell">
+        <nav class="category-link-list" aria-label="切換文章分類">
+          {% for item in site.data.category_details %}
+          <a href="{{ '/blog/categories/' | append: item[0] | append: '/' | relative_url }}"{% if item[0] == page.category %} aria-current="page"{% endif %}>{{ item[1].name }}</a>
+          {% endfor %}
+        </nav>
+        <div class="card-grid">
+          {% for post in category_posts %}{% include post-card.html post=post %}{% endfor %}
+        </div>
+        {% if category_posts.size == 0 %}<p class="empty-note">這個分類的文章正在整理中，請先查看其他保養主題。</p>{% endif %}
+      </div>
+    </section>
+  </main>
+  {% include footer.html %}
+  {% include tracker.html %}
+</body>
+</html>

@@ -19,7 +19,7 @@
     coverImage: 'HTTPS 首圖', coverAlt: '首圖替代文字 8–120 字', author: '作者名稱完整',
     takeaways: '重點摘要 2–5 點', faq: 'FAQ 2–6 組', sources: '可信來源至少 1 筆',
     contentLength: '正文至少 800 字', headingStructure: '至少兩個 H2 小標題',
-    safeMarkdown: '未含危險 HTML', publicSafety: '公開內容安全',
+    safeContent: 'HTML 與連結內容安全', safeCss: '自訂 CSS 已限制作用範圍', publicSafety: '公開內容安全',
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -33,6 +33,15 @@
   let articleItems = [];
   let dirty = false;
   let requestInFlight = false;
+  let editorMode = 'markdown';
+  let contentFormat = 'markdown';
+  let canonicalContent = '';
+  let customCss = '';
+  let lastPreview = null;
+  let previewTimer = null;
+  let previewSequence = 0;
+  let previewObjectUrl = null;
+  let previewStyleObjectUrl = null;
 
   function showView(name) {
     Object.entries(views).forEach(([key, element]) => { element.hidden = key !== name; });
@@ -137,8 +146,8 @@
     const confirmPassword = $('#confirm-password').value;
     setMessage('#password-message', '');
     if (newPassword !== confirmPassword) return setMessage('#password-message', '兩次輸入的新密碼不一致。');
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,72}$/.test(newPassword)) {
-      return setMessage('#password-message', '新密碼需為 12–72 碼，並包含英文大小寫、數字與符號。');
+    if (!/^\d{8}$/.test(newPassword)) {
+      return setMessage('#password-message', '新密碼必須是 8 碼純數字。');
     }
     const submit = $('#password-submit');
     submit.disabled = true;
@@ -229,7 +238,7 @@
     currentArticle = null;
     dirty = false;
     populateEditor({
-      title: '', slug: '', description: '', content: '', category: 'washing', tags: [], keywords: [],
+      title: '', slug: '', description: '', content: '', contentFormat: 'html', customCss: '', category: 'washing', tags: [], keywords: [],
       coverImageUrl: '', coverAlt: '', author: account?.displayName || 'Mio', reviewedBy: '', keyTakeaways: [],
       faq: [{ question: '', answer: '' }, { question: '', answer: '' }], sources: [{ label: '詹大汽車精品官方網站', url: 'https://jimmy-xinhow.github.io/janda-auto/' }],
       featured: false, status: 'draft', quality: null,
@@ -252,15 +261,24 @@
     $('#article-author').value = article.author || account?.displayName || 'Mio';
     $('#article-reviewer').value = article.reviewedBy || '';
     $('#article-takeaways').value = (article.keyTakeaways || []).join('\n');
-    $('#article-content').value = article.content || '';
+    contentFormat = article.contentFormat === 'html' ? 'html' : 'markdown';
+    canonicalContent = article.content || '';
+    customCss = article.customCss || '';
+    $('#article-content').value = contentFormat === 'markdown' ? canonicalContent : '';
+    $('#article-html').value = contentFormat === 'html' ? canonicalContent : '';
+    $('#article-css').value = customCss;
+    $('#article-plain').value = contentText(canonicalContent, contentFormat);
+    if (contentFormat === 'html') setSanitizedEditorHtml(canonicalContent);
+    else $('#visual-editor').replaceChildren();
     $('#article-featured').checked = Boolean(article.featured);
     renderFaq(article.faq || []);
     renderSources(article.sources || []);
     updateCoverPreview();
     updateEditorState(article);
+    showEditorPanel(contentFormat === 'html' ? 'visual' : 'markdown');
     updateCounts();
     renderQuality(article.quality || localQuality());
-    showWriteTab();
+    schedulePreview(0);
     $('#save-state').textContent = article.id ? `最後更新：${fmtDate(article.updatedAt)}` : '尚未儲存';
   }
 
@@ -300,9 +318,10 @@
   }
 
   function formPayload() {
+    syncCanonicalFromActiveEditor();
     const payload = {
       title: $('#article-title').value.trim(), slug: $('#article-slug').value.trim().toLowerCase(),
-      description: $('#article-description').value.trim(), content: $('#article-content').value.trim(),
+      description: $('#article-description').value.trim(), content: canonicalContent.trim(), contentFormat, customCss: customCss.trim(),
       category: $('#article-category').value, tags: csv($('#article-tags').value), keywords: csv($('#article-keywords').value),
       coverAlt: $('#article-cover-alt').value.trim(), author: $('#article-author').value.trim(), reviewedBy: $('#article-reviewer').value.trim(),
       keyTakeaways: lines($('#article-takeaways').value), faq: collectRepeater('#faq-list', ['question', 'answer']),
@@ -395,7 +414,12 @@
       coverImage: /^https:\/\//i.test(value.coverImageUrl || ''), coverAlt: count(value.coverAlt) >= 8 && count(value.coverAlt) <= 120,
       author: count(value.author) >= 2 && count(value.author) <= 40, takeaways: value.keyTakeaways.length >= 2 && value.keyTakeaways.length <= 5,
       faq: value.faq.length >= 2 && value.faq.length <= 6, sources: value.sources.length >= 1 && value.sources.length <= 10,
-      contentLength: count(value.content) >= 800, headingStructure: (value.content.match(/^##\s+.+$/gm) || []).length >= 2,
+      contentLength: count(contentText(value.content, value.contentFormat)) >= 800,
+      headingStructure: value.contentFormat === 'html'
+        ? (value.content.match(/<h2(?:\s[^>]*)?>[\s\S]*?<\/h2>/gi) || []).length >= 2
+        : (value.content.match(/^##\s+.+$/gm) || []).length >= 2,
+      safeContent: !/<\s*\/?\s*(script|iframe|object|embed|form|style|svg|math|link|meta)\b|\bon[a-z]+\s*=|javascript\s*:|data:text\/html/i.test(value.content),
+      safeCss: !/@|url\s*\(|expression\s*\(|javascript\s*:|position\s*:\s*(fixed|sticky)/i.test(value.customCss || ''),
     };
     const passed = Object.values(checks).filter(Boolean).length;
     return { score: Math.round(passed / Object.keys(checks).length * 100), checks, issues: [] };
@@ -416,14 +440,18 @@
   function updateCounts() {
     $$('[data-count-for]').forEach((counter) => {
       const input = $(`#${counter.dataset.countFor}`); const count = Array.from(input.value.trim()).length;
-      const ranges = { 'article-title': [12, 70], 'article-description': [70, 160], 'article-content': [800, 60000] };
+      const ranges = { 'article-title': [12, 70], 'article-description': [70, 160] };
       const [min, max] = ranges[input.id]; counter.textContent = `${count} / ${min}–${max} 字`; counter.classList.toggle('invalid', count < min || count > max);
     });
+    syncCanonicalFromActiveEditor();
+    const count = Array.from(contentText(canonicalContent, contentFormat).trim()).length;
+    $('#content-count').textContent = `${count.toLocaleString('zh-TW')} 字 · ${contentFormat === 'html' ? 'HTML' : 'Markdown'}`;
+    $('#content-count').classList.toggle('invalid', count < 800 || count > 60000);
   }
 
   function markDirty() {
     if ($('#article-form').hidden) return;
-    dirty = true; $('#save-state').textContent = '有尚未儲存的變更'; updateCounts(); renderQuality(localQuality()); updateCoverPreview();
+    dirty = true; $('#save-state').textContent = '有尚未儲存的變更'; updateCounts(); renderQuality(localQuality()); updateCoverPreview(); schedulePreview();
   }
 
   function updateCoverPreview() {
@@ -431,35 +459,259 @@
     figure.hidden = !/^https:\/\//i.test(url); if (!figure.hidden) { $('#cover-preview-image').src = url; $('#cover-preview-image').alt = $('#article-cover-alt').value.trim() || '首圖預覽'; }
   }
 
-  function insertMarkdown(button) {
-    const area = $('#article-content'); const start = area.selectionStart; const end = area.selectionEnd; const selected = area.value.slice(start, end);
-    const prefix = button.dataset.mdPrefix; const wrap = button.dataset.mdWrap;
-    const replacement = wrap ? `${wrap}${selected || '文字'}${wrap}` : `${prefix}${selected || '內容'}`;
-    area.setRangeText(replacement, start, end, 'end'); area.focus(); markDirty();
+  function contentText(content, format) {
+    if (format !== 'html') return String(content || '');
+    const parsed = new DOMParser().parseFromString(String(content || ''), 'text/html');
+    return parsed.body.textContent || '';
   }
 
-  function showWriteTab() {
-    $('#article-content').hidden = false; $('#markdown-preview').hidden = true; $('#write-tab').classList.add('active'); $('#preview-tab').classList.remove('active');
-    $('#write-tab').setAttribute('aria-selected', 'true'); $('#preview-tab').setAttribute('aria-selected', 'false');
+  function setSanitizedEditorHtml(html) {
+    const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    const nodes = Array.from(parsed.body.childNodes).map((node) => document.importNode(node, true));
+    $('#visual-editor').replaceChildren(...nodes);
   }
-  function showPreviewTab() {
-    renderMarkdownPreview($('#article-content').value); $('#article-content').hidden = true; $('#markdown-preview').hidden = false;
-    $('#write-tab').classList.remove('active'); $('#preview-tab').classList.add('active'); $('#write-tab').setAttribute('aria-selected', 'false'); $('#preview-tab').setAttribute('aria-selected', 'true');
+
+  function syncCanonicalFromActiveEditor() {
+    if (editorMode === 'visual') {
+      canonicalContent = $('#visual-editor').innerHTML.trim();
+      contentFormat = 'html';
+    } else if (editorMode === 'markdown') {
+      canonicalContent = $('#article-content').value;
+      contentFormat = 'markdown';
+    } else if (editorMode === 'html') {
+      canonicalContent = $('#article-html').value;
+      customCss = $('#article-css').value;
+      contentFormat = 'html';
+    } else if (editorMode === 'plain') {
+      canonicalContent = $('#article-plain').value;
+      customCss = '';
+      contentFormat = 'markdown';
+    }
   }
-  function renderMarkdownPreview(markdown) {
-    const target = $('#markdown-preview'); target.replaceChildren(); let list = null;
-    String(markdown).split(/\r?\n/).forEach((raw) => {
-      const line = raw.trim(); if (!line) { list = null; return; }
-      let node;
-      if (line.startsWith('### ')) { node = document.createElement('h3'); node.textContent = line.slice(4); }
-      else if (line.startsWith('## ')) { node = document.createElement('h2'); node.textContent = line.slice(3); }
-      else if (/^[-*]\s+/.test(line)) {
-        if (!list) { list = document.createElement('ul'); target.appendChild(list); }
-        node = document.createElement('li'); node.textContent = line.replace(/^[-*]\s+/, ''); list.appendChild(node); return;
-      } else if (line.startsWith('> ')) { node = document.createElement('blockquote'); node.textContent = line.slice(2); }
-      else { node = document.createElement('p'); node.textContent = line.replace(/\*\*/g, ''); }
-      list = null; target.appendChild(node);
+
+  function showEditorPanel(mode) {
+    editorMode = mode;
+    $$('[data-editor-panel]').forEach((panel) => { panel.hidden = panel.dataset.editorPanel !== mode; });
+    $$('[data-editor-mode]').forEach((button) => {
+      const active = button.dataset.editorMode === mode;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
     });
+    $('.rich-toolbar').hidden = mode === 'html' || mode === 'plain';
+    const notes = {
+      visual: '可直接從 Word 貼上，內容會先經伺服器清理再插入。',
+      markdown: '支援 H2、H3、清單、引言、連結與圖片等 Markdown 語法。',
+      html: 'HTML 與 CSS 會使用白名單清理；CSS 只會作用於文章正文。',
+      plain: '純文字模式會移除既有格式；切換前系統會要求確認。',
+    };
+    $('#editor-mode-note').textContent = notes[mode];
+  }
+
+  async function sanitizedPreview(content = canonicalContent, format = contentFormat, css = customCss) {
+    return api('/articles/preview', {
+      method: 'POST',
+      body: JSON.stringify({ content, contentFormat: format, customCss: css }),
+    });
+  }
+
+  async function switchEditorMode(nextMode) {
+    if (nextMode === editorMode) return;
+    syncCanonicalFromActiveEditor();
+    try {
+      if ((nextMode === 'visual' || nextMode === 'html') && contentFormat === 'markdown') {
+        const preview = await sanitizedPreview();
+        canonicalContent = preview.html;
+        customCss = preview.customCss || '';
+        contentFormat = 'html';
+        setSanitizedEditorHtml(canonicalContent);
+        $('#article-html').value = canonicalContent;
+        $('#article-css').value = customCss;
+        toast('文章已轉為安全 HTML，可使用視覺或 HTML/CSS 模式編輯。');
+      } else if (nextMode === 'visual' && editorMode === 'html') {
+        const preview = await sanitizedPreview();
+        canonicalContent = preview.content;
+        customCss = preview.customCss || '';
+        $('#article-html').value = canonicalContent;
+        $('#article-css').value = customCss;
+        setSanitizedEditorHtml(canonicalContent);
+        toast('HTML 與 CSS 已安全清理並載入視覺編輯器。');
+      } else if (nextMode === 'markdown' && contentFormat === 'html') {
+        if (canonicalContent && !window.confirm('轉為 Markdown 可能會簡化部分 HTML 樣式，確定要轉換嗎？')) return;
+        canonicalContent = htmlToMarkdown(canonicalContent);
+        customCss = '';
+        contentFormat = 'markdown';
+        $('#article-content').value = canonicalContent;
+      } else if (nextMode === 'plain') {
+        if (canonicalContent && !window.confirm('切換純文字會移除目前的排版與 CSS，確定要繼續嗎？')) return;
+        canonicalContent = contentText(canonicalContent, contentFormat);
+        customCss = '';
+        contentFormat = 'markdown';
+        $('#article-plain').value = canonicalContent;
+      }
+
+      if (nextMode === 'visual') setSanitizedEditorHtml(canonicalContent);
+      if (nextMode === 'markdown') $('#article-content').value = canonicalContent;
+      if (nextMode === 'html') {
+        $('#article-html').value = canonicalContent;
+        $('#article-css').value = customCss;
+      }
+      if (nextMode === 'plain') $('#article-plain').value = contentText(canonicalContent, contentFormat);
+      showEditorPanel(nextMode);
+      markDirty();
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+
+  function htmlToMarkdown(html) {
+    const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    const render = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent || '';
+      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      const element = node;
+      const children = Array.from(element.childNodes).map(render).join('');
+      const tag = element.tagName.toLowerCase();
+      if (tag === 'h2') return `\n\n## ${children.trim()}\n\n`;
+      if (tag === 'h3') return `\n\n### ${children.trim()}\n\n`;
+      if (tag === 'h4') return `\n\n#### ${children.trim()}\n\n`;
+      if (tag === 'strong' || tag === 'b') return `**${children}**`;
+      if (tag === 'em' || tag === 'i') return `*${children}*`;
+      if (tag === 's' || tag === 'del') return `~~${children}~~`;
+      if (tag === 'code' && element.parentElement?.tagName.toLowerCase() !== 'pre') return `\`${children}\``;
+      if (tag === 'pre') return `\n\n\`\`\`\n${element.textContent || ''}\n\`\`\`\n\n`;
+      if (tag === 'blockquote') return `\n\n${children.trim().split(/\r?\n/).map((line) => `> ${line}`).join('\n')}\n\n`;
+      if (tag === 'li') return `- ${children.trim()}\n`;
+      if (tag === 'ul' || tag === 'ol') return `\n${children}\n`;
+      if (tag === 'a') return `[${children.trim() || element.getAttribute('href') || '連結'}](${element.getAttribute('href') || ''})`;
+      if (tag === 'img') return `![${element.getAttribute('alt') || '圖片'}](${element.getAttribute('src') || ''})`;
+      if (tag === 'br') return '\n';
+      if (tag === 'hr') return '\n\n---\n\n';
+      if (tag === 'p' || tag === 'figure' || tag === 'figcaption' || tag === 'div') return `\n\n${children.trim()}\n\n`;
+      return children;
+    };
+    return Array.from(parsed.body.childNodes).map(render).join('').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function insertMarkdownSyntax(button) {
+    const area = $('#article-content');
+    const start = area.selectionStart;
+    const end = area.selectionEnd;
+    const selected = area.value.slice(start, end) || '文字';
+    const command = button.dataset.command;
+    const block = button.dataset.block;
+    let replacement = selected;
+    if (block === 'h2') replacement = `## ${selected}`;
+    else if (block === 'h3') replacement = `### ${selected}`;
+    else if (block === 'blockquote') replacement = selected.split(/\r?\n/).map((line) => `> ${line}`).join('\n');
+    else if (command === 'bold') replacement = `**${selected}**`;
+    else if (command === 'italic') replacement = `*${selected}*`;
+    else if (command === 'strikeThrough') replacement = `~~${selected}~~`;
+    else if (command === 'formatCode') replacement = `\`${selected}\``;
+    else if (command === 'insertUnorderedList') replacement = selected.split(/\r?\n/).map((line) => `- ${line}`).join('\n');
+    else if (command === 'createLink') {
+      const url = askForUrl('請輸入連結網址（http、https 或 mailto）：', false);
+      if (!url) return;
+      replacement = `[${selected}](${url})`;
+    } else if (command === 'insertImage') {
+      const url = askForUrl('請輸入圖片 HTTPS 網址：', true);
+      if (!url) return;
+      replacement = `![${selected === '文字' ? '圖片說明' : selected}](${url})`;
+    } else if (['underline', 'justifyLeft', 'justifyCenter', 'justifyRight'].includes(command)) {
+      return toast('此格式請切換到視覺編輯器使用。', true);
+    } else if (command === 'undo') { document.execCommand('undo'); return; }
+    else if (command === 'redo') { document.execCommand('redo'); return; }
+    area.setRangeText(replacement, start, end, 'end');
+    area.focus();
+    markDirty();
+  }
+
+  function askForUrl(message, imageOnly) {
+    const value = window.prompt(message, 'https://');
+    if (!value) return null;
+    try {
+      const parsed = new URL(value);
+      const allowed = imageOnly ? parsed.protocol === 'https:' : ['http:', 'https:', 'mailto:'].includes(parsed.protocol);
+      if (!allowed) throw new Error('invalid protocol');
+      return parsed.toString();
+    } catch {
+      toast(imageOnly ? '圖片只接受 HTTPS 網址。' : '連結網址格式不正確。', true);
+      return null;
+    }
+  }
+
+  function runToolbarCommand(button) {
+    if (editorMode === 'markdown') return insertMarkdownSyntax(button);
+    if (editorMode !== 'visual') return toast('請切換到視覺編輯器或 Markdown 後使用格式工具。', true);
+    $('#visual-editor').focus();
+    const command = button.dataset.command;
+    const block = button.dataset.block;
+    if (block) document.execCommand('formatBlock', false, block);
+    else if (command === 'formatCode') document.execCommand('formatBlock', false, 'pre');
+    else if (command === 'createLink') {
+      const url = askForUrl('請輸入連結網址（http、https 或 mailto）：', false);
+      if (url) document.execCommand('createLink', false, url);
+    } else if (command === 'insertImage') {
+      const url = askForUrl('請輸入圖片 HTTPS 網址：', true);
+      if (url) document.execCommand('insertImage', false, url);
+    } else if (command) document.execCommand(command, false);
+    markDirty();
+  }
+
+  async function handleVisualPaste(event) {
+    const html = event.clipboardData?.getData('text/html');
+    if (!html) return;
+    event.preventDefault();
+    $('#preview-status').textContent = '正在清理貼上的 Word / HTML 內容…';
+    try {
+      const result = await sanitizedPreview(html, 'html', '');
+      $('#visual-editor').focus();
+      document.execCommand('insertHTML', false, result.content);
+      markDirty();
+      toast('貼上內容已完成安全清理。');
+    } catch (error) {
+      toast(`無法貼上內容：${error.message}`, true);
+    }
+  }
+
+  function schedulePreview(delay = 450) {
+    window.clearTimeout(previewTimer);
+    $('#preview-status').textContent = '等待更新預覽…';
+    previewTimer = window.setTimeout(refreshPreview, delay);
+  }
+
+  async function refreshPreview() {
+    syncCanonicalFromActiveEditor();
+    const sequence = ++previewSequence;
+    try {
+      const result = await sanitizedPreview();
+      if (sequence !== previewSequence) return;
+      lastPreview = result;
+      renderPreviewFrame(result);
+      $('#preview-status').textContent = `安全預覽已更新 · ${new Intl.DateTimeFormat('zh-TW', { timeStyle: 'medium' }).format(new Date())}`;
+    } catch (error) {
+      if (sequence !== previewSequence) return;
+      $('#preview-status').textContent = error.message;
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+  }
+
+  function renderPreviewFrame(preview) {
+    const toc = preview.toc?.length
+      ? `<nav class="toc" aria-label="文章目錄"><strong>目錄</strong><ol>${preview.toc.map((item) => `<li class="level-${item.level}"><a href="#${escapeHtml(item.id)}">${escapeHtml(item.text)}</a></li>`).join('')}</ol></nav>`
+      : '<p class="empty">加入 H2 / H3 小標題後，這裡會自動產生目錄。</p>';
+    const previewStyles = `
+      *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;padding:clamp(16px,4vw,36px);color:#1f2937;background:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.8}.toc{margin-bottom:28px;padding:20px;border:1px solid #dbe1e8;border-radius:12px;background:#f8fafc}.toc strong{display:block;margin-bottom:8px}.toc ol{margin:0;padding-left:24px}.toc .level-3{margin-left:18px}.toc a{color:#155eef}.empty{padding:18px;border:1px dashed #cbd5e1;border-radius:10px;color:#64748b}.cms-article-content{max-width:72ch;margin:auto}.cms-article-content h2,.cms-article-content h3{line-height:1.35;margin-top:1.6em;color:#111827}.cms-article-content img{max-width:100%;height:auto;border-radius:10px}.cms-article-content blockquote{margin-left:0;padding-left:16px;border-left:4px solid #d39a20;color:#475569}.cms-article-content pre{max-width:100%;overflow:auto;padding:16px;border-radius:8px;color:#e5e7eb;background:#111827}.cms-article-content table{width:100%;border-collapse:collapse}.cms-article-content th,.cms-article-content td{padding:8px;border:1px solid #dbe1e8}
+      ${preview.customCss || ''}
+    `;
+    if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+    if (previewStyleObjectUrl) URL.revokeObjectURL(previewStyleObjectUrl);
+    previewStyleObjectUrl = URL.createObjectURL(new Blob([previewStyles], { type: 'text/css;charset=utf-8' }));
+    const documentSource = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base target="_blank"><link rel="stylesheet" href="${previewStyleObjectUrl}"></head><body>${toc}<article class="cms-article-content">${preview.html || ''}</article></body></html>`;
+    previewObjectUrl = URL.createObjectURL(new Blob([documentSource], { type: 'text/html;charset=utf-8' }));
+    $('#article-preview-frame').src = previewObjectUrl;
   }
 
   function init() {
@@ -478,11 +730,25 @@
     $('#status-filter').addEventListener('change', loadArticles);
     let searchTimer;
     $('#article-search').addEventListener('input', () => { window.clearTimeout(searchTimer); searchTimer = window.setTimeout(loadArticles, 300); });
-    $('#write-tab').addEventListener('click', showWriteTab); $('#preview-tab').addEventListener('click', showPreviewTab);
-    $$('.markdown-toolbar button').forEach((button) => button.addEventListener('click', () => insertMarkdown(button)));
+    $$('[data-editor-mode]').forEach((button) => button.addEventListener('click', () => switchEditorMode(button.dataset.editorMode)));
+    $$('.rich-toolbar button').forEach((button) => button.addEventListener('click', () => runToolbarCommand(button)));
+    $$('[data-preview-device]').forEach((button) => button.addEventListener('click', () => {
+      const device = button.dataset.previewDevice;
+      $('#preview-frame-shell').className = `preview-frame-shell ${device}`;
+      $$('[data-preview-device]').forEach((item) => {
+        const active = item === button;
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+    }));
+    $('#visual-editor').addEventListener('paste', handleVisualPaste);
     $$('[data-password-toggle]').forEach((button) => button.addEventListener('click', () => { const input = $(`#${button.dataset.passwordToggle}`); input.type = input.type === 'password' ? 'text' : 'password'; button.textContent = input.type === 'password' ? '顯示' : '隱藏'; }));
     $('#article-form').addEventListener('input', markDirty);
-    window.addEventListener('beforeunload', (event) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+    window.addEventListener('beforeunload', (event) => {
+      if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+      if (previewStyleObjectUrl) URL.revokeObjectURL(previewStyleObjectUrl);
+      if (dirty) { event.preventDefault(); event.returnValue = ''; }
+    });
     showView('login');
   }
 

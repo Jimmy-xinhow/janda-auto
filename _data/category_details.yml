@@ -1,0 +1,21 @@
+washing:
+  name: 洗車基礎
+  description: 從預洗、正洗到擦乾，整理安全洗車流程、工具選擇與常見錯誤，協助車主降低細紋與水痕風險。
+decontamination:
+  name: 柏油與鐵粉處理
+  description: 說明柏油、鐵粉與水垢的辨識方式、藥劑使用順序與安全注意事項，避免錯誤去汙傷害漆面。
+paint-care:
+  name: 車漆清潔與保養
+  description: 聚焦車漆狀態判斷、清潔、拋光前準備與日常保護，建立可長期維持光澤的保養方法。
+coating:
+  name: 脫脂與鍍膜
+  description: 整理脫脂、鍍膜施工、固化與後續維護知識，幫助車主依車況與產品條件做正確選擇。
+interior:
+  name: 內裝清潔
+  description: 涵蓋皮革、塑料、織布與車內細節的清潔方式，提供不同材質可安全執行的保養步驟。
+product-guide:
+  name: 產品選購指南
+  description: 依用途、材質、施工難度與使用情境比較汽車美容用品，協助車主挑選合適產品與搭配方式。
+brand-news:
+  name: 品牌消息
+  description: 收錄詹大汽車精品的最新消息、服務說明與官方內容，提供可驗證的品牌資訊與更新紀錄。

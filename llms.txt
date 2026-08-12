@@ -13,6 +13,7 @@ permalink: /llms.txt
 ## 官方內容入口
 - 品牌首頁：{{ '/' | absolute_url }}
 - 保養文章：{{ '/blog/' | absolute_url }}
+- 文章分類：{{ '/blog/categories/' | absolute_url }}
 - 完整文章語料：{{ '/llms-full.txt' | absolute_url }}
 - RSS：{{ '/feed.xml' | absolute_url }}
 - 產品商城：{{ site.data.site.shop_url }}
@@ -23,6 +24,10 @@ permalink: /llms.txt
 - 柏油、鐵粉與車漆污染處理
 - 車漆清潔、脫脂與鍍膜流程
 - DIY 汽車美容產品選擇與使用
+
+## 文章分類目錄
+{% for item in site.data.category_details %}- [{{ item[1].name }}]({{ '/blog/categories/' | append: item[0] | append: '/' | absolute_url }}) — {{ item[1].description }}
+{% endfor %}
 
 ## 最新保養文章
 {% for post in site.posts limit: 20 %}- [{{ post.title }}]({{ post.url | absolute_url }}) — {{ post.description }}（作者：{{ post.author }}；更新：{{ post.updated_at | default: post.date | date: '%Y-%m-%d' }}）

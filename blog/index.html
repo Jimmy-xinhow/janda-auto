@@ -14,6 +14,13 @@ permalink: /blog/
 
 <section class="blog-section">
   <div class="shell">
+    <div class="blog-category-intro">
+      <div><span class="eyebrow">TOPIC DIRECTORY</span><h2>依主題瀏覽文章</h2><p>每個分類都有獨立網址、說明與文章清單，方便讀者與搜尋引擎理解內容架構。</p></div>
+      <a class="text-link" href="{{ '/blog/categories/' | relative_url }}">查看完整分類 <span aria-hidden="true">→</span></a>
+    </div>
+    <nav class="category-link-list" aria-label="文章分類目錄">
+      {% for item in site.data.category_details %}<a href="{{ '/blog/categories/' | append: item[0] | append: '/' | relative_url }}">{{ item[1].name }}</a>{% endfor %}
+    </nav>
     <div class="filters" aria-label="文章篩選">
       <label class="search-field" for="post-search">
         <span>搜尋文章</span>

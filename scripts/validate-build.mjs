@@ -6,6 +6,9 @@ const root = path.join(process.cwd(), '_site');
 const errors = [];
 const required = [
   'index.html', 'blog/index.html', 'blog/janda-auto-care-blog/index.html',
+  'blog/categories/index.html', 'blog/categories/washing/index.html', 'blog/categories/decontamination/index.html',
+  'blog/categories/paint-care/index.html', 'blog/categories/coating/index.html', 'blog/categories/interior/index.html',
+  'blog/categories/product-guide/index.html', 'blog/categories/brand-news/index.html',
   'robots.txt', 'sitemap.xml', 'feed.xml', 'llms.txt', 'llms-full.txt', '404.html', 'admin/index.html',
   'assets/css/site.css', 'assets/css/admin.css', 'assets/js/blog.js', 'assets/js/article.js', 'assets/js/admin.js', 'assets/favicon.svg',
 ];
@@ -49,6 +52,8 @@ if (fs.existsSync(root)) {
   for (const url of [
     'https://jimmy-xinhow.github.io/janda-auto/',
     'https://jimmy-xinhow.github.io/janda-auto/blog/',
+    'https://jimmy-xinhow.github.io/janda-auto/blog/categories/',
+    'https://jimmy-xinhow.github.io/janda-auto/blog/categories/washing/',
     'https://jimmy-xinhow.github.io/janda-auto/blog/janda-auto-care-blog/',
   ]) if (!sitemap.includes(url)) fail(`sitemap.xml 缺少 ${url}`);
 

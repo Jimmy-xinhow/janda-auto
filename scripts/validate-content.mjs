@@ -77,8 +77,19 @@ function validatePost(file) {
     if (!item?.question || chars(item?.answer) < 20) fail(relative, `faq[${index}] 必須有問題和至少 20 字回答`);
   });
   if (typeof data.published !== 'boolean') fail(relative, 'published 必須是 true 或 false');
-  if (body.trim().length < 500) fail(relative, '正文至少需要 500 個字元');
-  if ((body.match(/^##\s+/gm) || []).length < 2) fail(relative, '正文至少需要兩個 H2 段落');
+  const contentFormat = data.content_format === 'html' ? 'html' : 'markdown';
+  const plainBody = contentFormat === 'html' ? body.replace(/<[^>]*>/g, ' ').replace(/&[a-z0-9#]+;/gi, ' ') : body;
+  if (chars(plainBody) < 500) fail(relative, '正文至少需要 500 個字元');
+  const h2Count = contentFormat === 'html'
+    ? (body.match(/<h2(?:\s[^>]*)?>[\s\S]*?<\/h2>/gi) || []).length
+    : (body.match(/^##\s+/gm) || []).length;
+  if (h2Count < 2) fail(relative, '正文至少需要兩個 H2 段落');
+  if (/<\s*\/?\s*(script|iframe|object|embed|form|style|svg|math|link|meta)\b|\bon[a-z]+\s*=|javascript\s*:|data:text\/html/i.test(body)) {
+    fail(relative, '正文包含不安全的 HTML、事件屬性或可執行網址');
+  }
+  if (/@|url\s*\(|expression\s*\(|javascript\s*:|position\s*:\s*(fixed|sticky)|<|>/i.test(data.custom_css || '')) {
+    fail(relative, 'custom_css 包含未隔離或不安全的規則');
+  }
   if (!body.includes('<!--more-->')) warn(relative, '建議加入 <!--more--> 控制列表摘要切點');
 
   if (data.cover_image?.startsWith('/janda-auto/')) {

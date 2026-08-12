@@ -13,8 +13,16 @@ if (!outputDirectory.startsWith(`${root}${path.sep}`) || path.basename(outputDir
   throw new Error('CMS output path escaped the approved repository scope');
 }
 
-function addExcerpt(content) {
+function addExcerpt(content, format) {
   if (content.includes('<!--more-->')) return content;
+  if (format === 'html') {
+    const paragraphEnd = content.search(/<\/p\s*>/i);
+    if (paragraphEnd >= 0) {
+      const insertAt = content.indexOf('>', paragraphEnd) + 1;
+      return `${content.slice(0, insertAt)}\n\n<!--more-->\n\n${content.slice(insertAt)}`;
+    }
+    return `${content}\n\n<!--more-->\n`;
+  }
   const lines = content.split(/\r?\n/);
   let seenParagraph = false;
   for (let index = 0; index < lines.length; index += 1) {
@@ -53,8 +61,10 @@ function postSource(article) {
     key_takeaways: article.keyTakeaways,
     faq: article.faq,
     sources: article.sources,
+    content_format: article.contentFormat === 'html' ? 'html' : 'markdown',
+    custom_css: article.customCss || '',
   };
-  return `---\n${stringify(frontMatter, { lineWidth: 0 }).trimEnd()}\n---\n\n${addExcerpt(article.content).trim()}\n`;
+  return `---\n${stringify(frontMatter, { lineWidth: 0 }).trimEnd()}\n---\n\n${addExcerpt(article.content, frontMatter.content_format).trim()}\n`;
 }
 
 const response = await fetch(endpoint, { headers: { Accept: 'application/json', 'User-Agent': 'janda-site-cms-sync/1.0' }, signal: AbortSignal.timeout(25_000) });
